@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Portfolio Anisa</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+    margin:0;
+    font-family:'Poppins', sans-serif;
+
+    /* gradient background */
+    background: linear-gradient(135deg,#ffd6e8,#d6ecff);
+
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* card tengah */
+.container{
+    background:white;
+    width:450px;
+    padding:40px;
+    text-align:center;
+    border-radius:20px;
+    box-shadow:0px 6px 20px rgba(0,0,0,0.15);
+}
+
+h1{
+    font-family:'Playfair Display', serif;
+    color:#ff5ca8;
+    font-size:32px;
+}
+
+p{
+    color:#555;
+}
+
+/* tombol */
+a{
+    display:inline-block;
+    margin:10px;
+    padding:10px 22px;
+    background:#ff8ec7;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+    transition:0.3s;
+}
+
+a:hover{
+    background:#ff5ca8;
+}
+
+/* bunga */
+.flower1{
+    position:absolute;
+    top:20px;
+    left:20px;
+    width:100px;
+}
+
+.flower2{
+    position:absolute;
+    bottom:20px;
+    right:20px;
+    width:100px;
+}
+
+
+</style>
+
+</head>
+
+<body>
+
+<!-- bunga dekorasi -->
+<img class="flower1" src="https://cdn-icons-png.flaticon.com/512/765/765613.png">
+<img class="flower2" src="https://cdn-icons-png.flaticon.com/512/765/765613.png">
+
+<div class="container">
+
+<h1>Halo, everyone !!</h1>
+
+<p>Selamat Datang Di Website Portofolio Sederhana Saya</p>
+
+<p>Website ini dibuat menggunakan Django Framework untuk memenuhi tugas praktikum Pemrograman Internet 1.</p>
+
+<a href="/about">About Me</a>
+<a href="/contacts">Contact</a>
+
+</div>
+
+</body>
+
+</html>
