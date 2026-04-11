@@ -1,0 +1,89 @@
+{% extends 'main_app/base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">{{ object.title }}</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Detail Laporan</h5>
+                <p class="card-text"><strong>Kategori:</strong> <span class="badge bg-secondary">{{ object.category }}</span></p>
+                <p class="card-text"><strong>Deskripsi:</strong> {{ object.description }}</p>
+                <p class="card-text"><strong>Lokasi:</strong> {{ object.location }}</p>
+                <p class="card-text"><strong>Status:</strong>
+                    {% if object.status == 'REPORTED' %}
+                        <span class="badge bg-warning">Reported</span>
+                    {% elif object.status == 'VERIFIED' %}
+                        <span class="badge bg-info">Verified</span>
+                    {% elif object.status == 'IN_PROGRESS' %}
+                        <span class="badge bg-primary">In Progress</span>
+                    {% elif object.status == 'RESOLVED' %}
+                        <span class="badge bg-success">Resolved</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ object.status }}</span>
+                    {% endif %}
+                </p>
+                <p class="card-text"><strong>Tanggal Dibuat:</strong> {{ object.created_at|date:"d M Y, H:i" }}</p>
+                <p class="card-text"><strong>Nama Pelapor:</strong> {{ object.reporter_name }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{% url 'update_report' object.pk %}" class="btn btn-warning">Edit</a>
+            <a href="{% url 'delete_report' object.pk %}" class="btn btn-danger">Hapus</a>
+            <a href="{% url 'home' %}" class="btn btn-secondary">Kembali</a>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Validasi Status Laporan</h5>
+                        <p class="card-text text-muted">Ubah status laporan untuk mencatat progress.</p>
+                        <form method="post" action="{% url 'update_status' object.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                {{ status_form.status.label_tag }}
+                                {{ status_form.status }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Simpan Status</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Riwayat Perubahan Status</h5>
+                        {% if status_history %}
+                            <ul class="list-group list-group-flush">
+                                {% for change in status_history %}
+                                    <li class="list-group-item">
+                                        <strong>{{ change.changed_at|date:"d M Y, H:i" }}</strong>
+                                        <div class="small text-muted">{{ change.note }}</div>
+                                        <span class="badge 
+                                            {% if change.new_status == 'REPORTED' %}bg-warning
+                                            {% elif change.new_status == 'VERIFIED' %}bg-info
+                                            {% elif change.new_status == 'IN_PROGRESS' %}bg-primary
+                                            {% elif change.new_status == 'RESOLVED' %}bg-success
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ change.get_new_status_display }}
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <div class="alert alert-light mb-0">
+                                Belum ada bukti perubahan status. Ubah status untuk mencatat riwayat.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

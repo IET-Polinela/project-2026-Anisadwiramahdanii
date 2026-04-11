@@ -1,0 +1,25 @@
+{% extends 'main_app/base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Konfirmasi Hapus</h4>
+            </div>
+            <div class="card-body">
+                <p>Yakin ingin menghapus laporan "<strong>{{ object.title }}</strong>"?</p>
+                <p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p>
+
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                </form>
+                <a href="{% url 'report_detail' object.pk %}" class="btn btn-secondary">Batal</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

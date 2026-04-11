@@ -1,0 +1,73 @@
+{% extends 'main_app/base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center" style="animation: fadeInUp 1s ease-out;">
+    <div class="col-md-8">
+        <div class="text-center mb-4">
+            <h2 class="display-5">{% if form.instance.pk %}Edit Laporan{% else %}Tambah Laporan Baru{% endif %}</h2>
+            <p class="lead text-muted">Isi formulir di bawah untuk melaporkan masalah kota.</p>
+        </div>
+
+        <div class="card shadow-lg border-0" style="border-radius: 20px; background: rgba(255,255,255,0.9);">
+            <div class="card-body p-5">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.reporter_name.id_for_label }}" class="form-label fw-bold">Nama Pelapor</label>
+                            {{ form.reporter_name }}
+                            {% if form.reporter_name.errors %}
+                                <div class="invalid-feedback">{{ form.reporter_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">Judul Laporan</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">Kategori</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">Deskripsi</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.location.id_for_label }}" class="form-label fw-bold">Lokasi</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="invalid-feedback">{{ form.location.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary me-md-2">
+                            Batal
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            {% if form.instance.pk %}Simpan Perubahan{% else %}Kirim Laporan{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

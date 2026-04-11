@@ -1,5 +1,5 @@
 """
-URL configuration for npm_iet_2026 project.
+URL configuration for iet_24782037_2026 project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
@@ -18,8 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('main_app.urls')),
-    path('about/', include('about.urls')),
-    path('contacts/', include('contacts.urls')),
     path('admin/', admin.site.urls),
+    path('', include('main_app.urls')),
 ]
