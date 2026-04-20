@@ -8,8 +8,23 @@ STATUS_CHOICES = [
     ('RESOLVED', 'Resolved'),
 ]
 
+STATUS_TRANSITIONS = {
+    'REPORTED': 'VERIFIED',
+    'VERIFIED': 'IN_PROGRESS',
+    'IN_PROGRESS': 'RESOLVED',
+    'RESOLVED': None,
+}
+
+STATUS_BADGE_CLASSES = {
+    'REPORTED': 'text-bg-warning',
+    'VERIFIED': 'text-bg-info',
+    'IN_PROGRESS': 'text-bg-primary',
+    'RESOLVED': 'text-bg-success',
+}
+
+
 class Report(models.Model):
-    reporter_name = models.CharField(max_length=100)  # 🔥 TAMBAHAN (nama pelapor)
+    reporter_name = models.CharField(max_length=100)
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=100)
     description = models.TextField()
@@ -17,7 +32,7 @@ class Report(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='REPORTED'
+        default='REPORTED',
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -28,6 +43,22 @@ class Report(models.Model):
         valid_statuses = [choice[0] for choice in STATUS_CHOICES]
         if self.status not in valid_statuses:
             raise ValidationError({'status': 'Status tidak valid.'})
+
+    @property
+    def status_badge_class(self):
+        return STATUS_BADGE_CLASSES.get(self.status, 'text-bg-secondary')
+
+    @property
+    def next_status(self):
+        next_status_code = STATUS_TRANSITIONS.get(self.status)
+        if not next_status_code:
+            return None
+
+        status_map = dict(STATUS_CHOICES)
+        return {
+            'value': next_status_code,
+            'label': status_map[next_status_code],
+        }
 
 
 class ReportStatusChange(models.Model):
@@ -41,4 +72,8 @@ class ReportStatusChange(models.Model):
         ordering = ['-changed_at']
 
     def __str__(self):
-        return f"{self.report.title}: {self.get_old_status_display()} → {self.get_new_status_display()}"
+        return f"{self.report.title}: {self.get_old_status_display()} -> {self.get_new_status_display()}"
+
+    @property
+    def new_status_badge_class(self):
+        return STATUS_BADGE_CLASSES.get(self.new_status, 'text-bg-secondary')

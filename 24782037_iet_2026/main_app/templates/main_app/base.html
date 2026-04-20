@@ -1,112 +1,177 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Smart City</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-start: #f8f4ec;
+            --bg-end: #dff2eb;
+            --ink: #16302b;
+            --muted: #58706a;
+            --brand: #d96f32;
+            --brand-dark: #a84f1f;
+            --surface: rgba(255, 255, 255, 0.9);
+            --border: rgba(22, 48, 43, 0.08);
+        }
+
         body {
-            background: linear-gradient(135deg, #ffb6c1 0%, #dda0dd 50%, #ba55d3 100%);
             min-height: 100vh;
-            font-family: 'Nunito', sans-serif;
+            color: var(--ink);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(217, 111, 50, 0.18), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(41, 143, 123, 0.18), transparent 24%),
+                linear-gradient(135deg, var(--bg-start), var(--bg-end));
         }
-        .container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(186, 85, 211, 0.4);
-            margin-top: 20px;
-            animation: fadeInUp 1s ease-out;
+
+        .navbar-shell,
+        .content-shell,
+        .footer-shell {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 18px 45px rgba(22, 48, 43, 0.08);
         }
-        @keyframes fadeInUp {
+
+        .navbar-shell {
+            border-radius: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .content-shell {
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-top: 1.25rem;
+            animation: fadeUp 0.6s ease-out;
+        }
+
+        .footer-shell {
+            border-radius: 1.2rem 1.2rem 0 0;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-link {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--brand);
+        }
+
+        .btn-primary {
+            background-color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: var(--brand-dark);
+            border-color: var(--brand-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .table thead th {
+            background-color: #16302b;
+            color: #fff;
+            border: none;
+        }
+
+        .card,
+        .list-group-item {
+            border-color: var(--border);
+            border-radius: 1rem;
+        }
+
+        .section-title {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        @keyframes fadeUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(14px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-        .table-hover tbody tr:hover {
-            background-color: rgba(221, 160, 221, 0.1);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(186, 85, 211, 0.3);
-            transition: all 0.3s ease;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Nunito', sans-serif;
-            color: #e91e63;
-            font-weight: 600;
-        }
-        .navbar {
-            background: linear-gradient(90deg, #ffb6c1, #dda0dd);
-            border-radius: 10px;
-        }
-        .navbar-brand {
-            font-family: 'Nunito', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        .btn-primary {
-            background-color: #ff69b4;
-            border-color: #ff69b4;
-        }
-        .btn-primary:hover {
-            background-color: #e91e63;
-            border-color: #e91e63;
-        }
-        .badge {
-            font-weight: normal;
-        }
-        .card {
-            border-radius: 15px;
-            border: 2px solid #dda0dd;
-        }
     </style>
 </head>
 <body>
+    <div class="container py-2 py-md-4">
+        <nav class="navbar navbar-expand-lg navbar-light navbar-shell px-3 px-md-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+                <span class="badge rounded-pill text-bg-dark"><i class="bi bi-buildings"></i></span>
+                Smart City Report
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'report_list' %}">Reports</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-primary rounded-pill px-3" href="{% url 'create_report' %}">
+                            <i class="bi bi-plus-circle me-1"></i>Tambah
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'home' %}">
-            <i class="bi bi-heart-fill"></i> Smart City
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">Beranda</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'create_report' %}">Tambah Laporan</a>
-                </li>
-            </ul>
-        </div>
+        <main class="content-shell">
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
     </div>
-</nav>
 
-<div class="container">
-    {% block content %}
-    {% endblock %}
-</div>
+    <footer class="footer-shell mt-4 px-4 py-3 text-center text-md-start">
+        <div class="container d-md-flex justify-content-between align-items-center">
+            <div>
+                <strong>Smart City Report</strong>
+                <div class="text-secondary small">Lab Session 5 - Django Template, Bootstrap, dan workflow status.</div>
+            </div>
+            <div class="small text-secondary mt-2 mt-md-0">24782037 - IET 2026</div>
+        </div>
+    </footer>
 
-<footer class="text-center mt-5 py-4" style="background: linear-gradient(90deg, #ffb6c1, #dda0dd); color: white; border-radius: 10px;">
-    <p>&copy; 2026 Smart City Issue Reporting. Dibuat Oleh Anisa Dwi Ramahdani.</p>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

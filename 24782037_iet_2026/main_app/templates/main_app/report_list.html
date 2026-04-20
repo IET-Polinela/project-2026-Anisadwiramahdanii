@@ -1,47 +1,55 @@
 {% extends 'main_app/base.html' %}
 
 {% block content %}
-
-<h2 class="mb-3">Daftar Laporan</h2>
-
-<div class="mb-3">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="section-title h2 mb-1">Daftar Laporan</h1>
+        <p class="text-secondary mb-0">Tabel laporan dengan status, lokasi, dan aksi pengelolaan.</p>
+    </div>
     <a href="{% url 'create_report' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Tambah Laporan
+        <i class="bi bi-plus-circle me-1"></i>Tambah Laporan
     </a>
 </div>
 
-<div class="list-group">
-    {% for report in reports %}
-        <a href="{% url 'report_detail' report.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-            <div>
-                <h5 class="mb-1">{{ report.title }}</h5>
-                <p class="mb-1">{{ report.description|truncatechars:100 }}</p>
-                <small class="text-muted">{{ report.location }} - {{ report.created_at|date:"d M Y" }}</small>
-            </div>
-            <span class="badge 
-                {% if report.status == 'REPORTED' %}bg-warning
-                {% elif report.status == 'VERIFIED' %}bg-info
-                {% elif report.status == 'IN_PROGRESS' %}bg-primary
-                {% elif report.status == 'RESOLVED' %}bg-success
-                {% else %}bg-secondary{% endif %}">
-                {% if report.status == 'REPORTED' %}
-                    Reported
-                {% elif report.status == 'VERIFIED' %}
-                    Verified
-                {% elif report.status == 'IN_PROGRESS' %}
-                    In Progress
-                {% elif report.status == 'RESOLVED' %}
-                    Resolved
-                {% else %}
-                    {{ report.status|title }}
-                {% endif %}
-            </span>
-        </a>
-    {% empty %}
-        <div class="alert alert-info" role="alert">
-            Belum ada laporan.
-        </div>
-    {% endfor %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Judul</th>
+                <th>Pelapor</th>
+                <th>Kategori</th>
+                <th>Lokasi</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ report.title }}</div>
+                        <div class="text-secondary small">{{ report.description|truncatechars:70 }}</div>
+                    </td>
+                    <td>{{ report.reporter_name }}</td>
+                    <td>{{ report.category }}</td>
+                    <td>{{ report.location }}</td>
+                    <td><span class="badge rounded-pill {{ report.status_badge_class }}">{{ report.get_status_display }}</span></td>
+                    <td>{{ report.created_at|date:"d M Y, H:i" }}</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Detail</a>
+                            <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">Hapus</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-secondary py-4">Belum ada laporan.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
 {% endblock %}

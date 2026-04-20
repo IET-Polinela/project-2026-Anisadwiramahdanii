@@ -1,68 +1,99 @@
 {% extends 'main_app/base.html' %}
 
 {% block content %}
+<section class="mb-5">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <span class="badge rounded-pill text-bg-light border mb-3">Anisa Dwi Ramahdani</span>
+            <h1 class="section-title display-5 mb-3">Dashboard pelaporan masalah kota Bandar Lampung.</h1>
+            <p class="lead text-secondary mb-4">
+                Sistem ini membantu mencatat laporan warga, menampilkan status dengan jelas, dan memastikan workflow berjalan berurutan dari reported sampai resolved.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'report_list' %}" class="btn btn-primary px-4">Lihat Semua Laporan</a>
+                <a href="{% url 'create_report' %}" class="btn btn-outline-primary px-4">Tambah Laporan</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">Total laporan</div>
+                            <div class="display-6 fw-bold">{{ report_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">Verified</div>
+                            <div class="display-6 fw-bold">{{ verified_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">In progress</div>
+                            <div class="display-6 fw-bold">{{ in_progress_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">Resolved</div>
+                            <div class="display-6 fw-bold">{{ resolved_count }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="text-center mb-4" style="animation: fadeInUp 1.5s ease-out;">
-        <h1 class="display-4">Smart City Issue Reporting</h1>
-        <p class="lead text-muted">
-            Aplikasi sederhana untuk mencatat laporan permasalahan kota.
-        </p>
-        <a href="{% url 'create_report' %}" class="btn btn-primary btn-lg">
-            Tambah Laporan Baru
-        </a>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="section-title h3 mb-1">Laporan terbaru</h2>
+            <p class="text-secondary mb-0">Menampilkan lima laporan terbaru dari sistem.</p>
+        </div>
+        <a href="{% url 'report_list' %}" class="btn btn-outline-secondary">Semua laporan</a>
     </div>
 
-<h2 class="mb-3">Daftar Laporan</h2>
-
-<div class="table-responsive" style="animation: fadeInUp 2s ease-out;">
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Judul</th>
-                <th>Nama Pelapor</th>
-                <th>Kategori</th>
-                <th>Deskripsi</th>
-                <th>Lokasi</th>
-                <th>Status</th>
-                <th>Tanggal</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for report in reports %}
-            <tr>
-                <td><a href="{% url 'report_detail' report.pk %}" class="text-decoration-none">{{ report.title }}</a></td>
-                <td>{{ report.reporter_name }}</td>
-                <td><span class="badge bg-secondary">{{ report.category }}</span></td>
-                <td>{{ report.description|truncatechars:50 }}</td>
-                <td>{{ report.location }}</td>
-                <td>
-                    {% if report.status == 'REPORTED' %}
-                        <span class="badge bg-warning">Reported</span>
-                    {% elif report.status == 'VERIFIED' %}
-                        <span class="badge bg-info">Verified</span>
-                    {% elif report.status == 'IN_PROGRESS' %}
-                        <span class="badge bg-primary">In Progress</span>
-                    {% elif report.status == 'RESOLVED' %}
-                        <span class="badge bg-success">Resolved</span>
-                    {% else %}
-                        <span class="badge bg-secondary">{{ report.status }}</span>
-                    {% endif %}
-                </td>
-                <td>{{ report.created_at|date:"d M Y, H:i" }}</td>
-                <td>
-                    <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Lihat</a>
-                    <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
-                    <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">Hapus</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="8" class="text-center text-muted">Belum ada laporan</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Judul</th>
+                    <th>Pelapor</th>
+                    <th>Lokasi</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ report.title }}</div>
+                            <div class="text-secondary small">{{ report.category }}</div>
+                        </td>
+                        <td>{{ report.reporter_name }}</td>
+                        <td>{{ report.location }}</td>
+                        <td><span class="badge rounded-pill {{ report.status_badge_class }}">{{ report.get_status_display }}</span></td>
+                        <td>
+                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Detail</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-secondary py-4">Belum ada laporan yang ditambahkan.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

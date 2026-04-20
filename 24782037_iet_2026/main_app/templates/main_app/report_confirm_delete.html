@@ -1,25 +1,23 @@
 {% extends 'main_app/base.html' %}
 
 {% block content %}
-
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card border-danger">
-            <div class="card-header bg-danger text-white">
-                <h4 class="mb-0">Konfirmasi Hapus</h4>
-            </div>
-            <div class="card-body">
-                <p>Yakin ingin menghapus laporan "<strong>{{ object.title }}</strong>"?</p>
-                <p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p>
+    <div class="col-lg-6">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body p-4 text-center">
+                <div class="display-6 text-danger mb-3"><i class="bi bi-trash3"></i></div>
+                <h1 class="section-title h3 mb-3">Hapus Laporan</h1>
+                <p class="mb-1">Apakah kamu yakin ingin menghapus laporan berikut?</p>
+                <p class="fw-semibold mb-4">"{{ object.title }}"</p>
+                <p class="text-secondary small mb-4">Tindakan ini tidak dapat dibatalkan.</p>
 
-                <form method="post" class="d-inline">
+                <form method="post" class="d-flex flex-wrap gap-2 justify-content-center">
                     {% csrf_token %}
+                    <a href="{% url 'report_detail' object.pk %}" class="btn btn-outline-secondary">Batal</a>
                     <button type="submit" class="btn btn-danger">Ya, Hapus</button>
                 </form>
-                <a href="{% url 'report_detail' object.pk %}" class="btn btn-secondary">Batal</a>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}

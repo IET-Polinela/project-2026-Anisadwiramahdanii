@@ -1,89 +1,90 @@
 {% extends 'main_app/base.html' %}
 
 {% block content %}
-
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h1 class="mb-4">{{ object.title }}</h1>
-
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Detail Laporan</h5>
-                <p class="card-text"><strong>Kategori:</strong> <span class="badge bg-secondary">{{ object.category }}</span></p>
-                <p class="card-text"><strong>Deskripsi:</strong> {{ object.description }}</p>
-                <p class="card-text"><strong>Lokasi:</strong> {{ object.location }}</p>
-                <p class="card-text"><strong>Status:</strong>
-                    {% if object.status == 'REPORTED' %}
-                        <span class="badge bg-warning">Reported</span>
-                    {% elif object.status == 'VERIFIED' %}
-                        <span class="badge bg-info">Verified</span>
-                    {% elif object.status == 'IN_PROGRESS' %}
-                        <span class="badge bg-primary">In Progress</span>
-                    {% elif object.status == 'RESOLVED' %}
-                        <span class="badge bg-success">Resolved</span>
-                    {% else %}
-                        <span class="badge bg-secondary">{{ object.status }}</span>
-                    {% endif %}
-                </p>
-                <p class="card-text"><strong>Tanggal Dibuat:</strong> {{ object.created_at|date:"d M Y, H:i" }}</p>
-                <p class="card-text"><strong>Nama Pelapor:</strong> {{ object.reporter_name }}</p>
-            </div>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-4">
+    <div>
+        <h1 class="section-title h2 mb-2">{{ object.title }}</h1>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge rounded-pill text-bg-dark">{{ object.category }}</span>
+            <span class="badge rounded-pill {{ object.status_badge_class }}">{{ object.get_status_display }}</span>
         </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'update_report' object.pk %}" class="btn btn-outline-warning">Edit</a>
+        <a href="{% url 'delete_report' object.pk %}" class="btn btn-outline-danger">Hapus</a>
+        <a href="{% url 'report_list' %}" class="btn btn-outline-secondary">Kembali</a>
+    </div>
+</div>
 
-        <div class="mt-4">
-            <a href="{% url 'update_report' object.pk %}" class="btn btn-warning">Edit</a>
-            <a href="{% url 'delete_report' object.pk %}" class="btn btn-danger">Hapus</a>
-            <a href="{% url 'home' %}" class="btn btn-secondary">Kembali</a>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Validasi Status Laporan</h5>
-                        <p class="card-text text-muted">Ubah status laporan untuk mencatat progress.</p>
-                        <form method="post" action="{% url 'update_status' object.pk %}">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                {{ status_form.status.label_tag }}
-                                {{ status_form.status }}
-                            </div>
-                            <button type="submit" class="btn btn-primary">Simpan Status</button>
-                        </form>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-4">Informasi Laporan</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="text-secondary small">Nama pelapor</div>
+                        <div class="fw-semibold">{{ object.reporter_name }}</div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Riwayat Perubahan Status</h5>
-                        {% if status_history %}
-                            <ul class="list-group list-group-flush">
-                                {% for change in status_history %}
-                                    <li class="list-group-item">
-                                        <strong>{{ change.changed_at|date:"d M Y, H:i" }}</strong>
-                                        <div class="small text-muted">{{ change.note }}</div>
-                                        <span class="badge 
-                                            {% if change.new_status == 'REPORTED' %}bg-warning
-                                            {% elif change.new_status == 'VERIFIED' %}bg-info
-                                            {% elif change.new_status == 'IN_PROGRESS' %}bg-primary
-                                            {% elif change.new_status == 'RESOLVED' %}bg-success
-                                            {% else %}bg-secondary{% endif %}">
-                                            {{ change.get_new_status_display }}
-                                        </span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div class="alert alert-light mb-0">
-                                Belum ada bukti perubahan status. Ubah status untuk mencatat riwayat.
-                            </div>
-                        {% endif %}
+                    <div class="col-md-6">
+                        <div class="text-secondary small">Lokasi</div>
+                        <div class="fw-semibold">{{ object.location }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-secondary small">Deskripsi</div>
+                        <p class="mb-0">{{ object.description }}</p>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-secondary small">Tanggal dibuat</div>
+                        <div class="fw-semibold">{{ object.created_at|date:"d M Y, H:i" }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Workflow Status</h2>
+                <p class="text-secondary small mb-3">
+                    Alur valid: Reported -> Verified -> In Progress -> Resolved.
+                </p>
+
+                {% if object.next_status %}
+                    <form method="post" action="{% url 'update_status' object.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="{{ object.next_status.value }}">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Ubah ke {{ object.next_status.label }}
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-success mb-0">
+                        Laporan sudah mencapai status akhir dan tidak bisa diubah lagi.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Riwayat Status</h2>
+                {% if status_history %}
+                    <div class="list-group list-group-flush">
+                        {% for change in status_history %}
+                            <div class="list-group-item px-0">
+                                <div class="small text-secondary mb-1">{{ change.changed_at|date:"d M Y, H:i" }}</div>
+                                <div class="fw-semibold mb-1">{{ change.note }}</div>
+                                <span class="badge rounded-pill {{ change.new_status_badge_class }}">{{ change.get_new_status_display }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-light border mb-0">Belum ada perubahan status yang tercatat.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
