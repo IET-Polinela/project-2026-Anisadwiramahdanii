@@ -1,4 +1,6 @@
 from django.contrib import messages
+from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -31,7 +33,39 @@ class ReportListView(ListView):
     model = Report
     template_name = 'main_app/report_list.html'
     context_object_name = 'reports'
-    queryset = Report.objects.order_by('-created_at')
+
+    def get_queryset(self):
+        queryset = Report.objects.order_by('-created_at')
+        query = self.request.GET.get('q', '').strip()
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query)
+                | Q(reporter_name__icontains=query)
+                | Q(category__icontains=query)
+                | Q(location__icontains=query)
+                | Q(description__icontains=query)
+            )
+        return queryset
+
+
+class ReportSearchView(View):
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+        reports = Report.objects.order_by('-created_at')
+
+        if query:
+            reports = reports.filter(
+                Q(title__icontains=query)
+                | Q(reporter_name__icontains=query)
+                | Q(category__icontains=query)
+                | Q(location__icontains=query)
+                | Q(description__icontains=query)
+            )
+
+        return JsonResponse({
+            'query': query,
+            'results': [serialize_report(report) for report in reports[:50]],
+        })
 
 
 class ReportDetailView(DetailView):
@@ -42,6 +76,12 @@ class ReportDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context['status_history'] = self.object.status_changes.all()
         return context
+
+
+class ReportDetailJsonView(View):
+    def get(self, request, pk):
+        report = get_object_or_404(Report, pk=pk)
+        return JsonResponse(serialize_report(report, include_description=True))
 
 
 class ReportCreateView(AdminRequiredMixin, CreateView):
@@ -97,3 +137,34 @@ class ReportUpdateStatusView(AdminRequiredMixin, View):
         )
         messages.success(request, f"Status laporan berhasil diubah ke {next_status['label']}.")
         return redirect('report_detail', pk=report.pk)
+
+
+def serialize_report(report, include_description=False):
+    data = {
+        'id': report.id,
+        'title': report.title,
+        'reporter_name': report.reporter_name,
+        'category': report.category,
+        'location': report.location,
+        'status': report.get_status_display(),
+        'status_code': report.status,
+        'status_badge_class': report.status_badge_class,
+        'created_at': report.created_at.strftime('%d %b %Y, %H:%M'),
+        'detail_url': report.get_absolute_url() if hasattr(report, 'get_absolute_url') else '',
+    }
+
+    if include_description:
+        data['description'] = report.description
+        data['status_history'] = [
+            {
+                'date': change.changed_at.strftime('%d %b %Y, %H:%M'),
+                'note': change.note,
+                'status': change.get_new_status_display(),
+                'status_badge_class': change.new_status_badge_class,
+            }
+            for change in report.status_changes.all()
+        ]
+    else:
+        data['description'] = report.description[:120]
+
+    return data

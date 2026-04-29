@@ -4,13 +4,31 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
         <h1 class="section-title h2 mb-1">Daftar Laporan</h1>
-        <p class="text-secondary mb-0">Tabel laporan dengan status, lokasi, dan aksi pengelolaan.</p>
+        <p class="text-secondary mb-0">Tabel laporan dengan live search dan detail instan tanpa reload.</p>
     </div>
     {% if user.is_authenticated and user.is_admin %}
         <a href="{% url 'create_report' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Tambah Laporan
         </a>
     {% endif %}
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <label for="reportSearchInput" class="form-label fw-semibold">Cari laporan</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input
+                type="search"
+                class="form-control"
+                id="reportSearchInput"
+                placeholder="Cari judul, pelapor, kategori, lokasi..."
+                autocomplete="off"
+                value="{{ request.GET.q|default:'' }}"
+            >
+        </div>
+        <div class="form-text" id="searchStatus">Menampilkan data laporan terbaru.</div>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -26,7 +44,7 @@
                 <th>Aksi</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="reportTableBody">
             {% for report in reports %}
                 <tr>
                     <td>
@@ -40,7 +58,14 @@
                     <td>{{ report.created_at|date:"d M Y, H:i" }}</td>
                     <td>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Detail</a>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-primary"
+                                data-report-detail
+                                data-url="{% url 'report_detail_json' report.pk %}"
+                            >
+                                Detail
+                            </button>
                             {% if user.is_authenticated and user.is_admin %}
                                 <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
                                 <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">Hapus</a>
@@ -56,4 +81,142 @@
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title h5" id="reportDetailModalLabel">Detail Laporan</h2>
+                    <div class="text-secondary small" id="reportDetailMeta">Memuat data...</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body" id="reportDetailBody">
+                <div class="text-center text-secondary py-4">Memuat detail laporan...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('reportSearchInput');
+        const searchStatus = document.getElementById('searchStatus');
+        const tableBody = document.getElementById('reportTableBody');
+        const modalElement = document.getElementById('reportDetailModal');
+        const modal = new bootstrap.Modal(modalElement);
+        const modalTitle = document.getElementById('reportDetailModalLabel');
+        const modalMeta = document.getElementById('reportDetailMeta');
+        const modalBody = document.getElementById('reportDetailBody');
+        const canManageReports = {% if user.is_authenticated and user.is_admin %}true{% else %}false{% endif %};
+        let debounceTimer = null;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function renderRows(reports) {
+            if (!reports.length) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary py-4">Tidak ada laporan yang cocok.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = reports.map(function (report) {
+                const editButtons = canManageReports
+                    ? `<a href="/report/update/${report.id}/" class="btn btn-sm btn-outline-warning">Edit</a>`
+                        + `<a href="/report/delete/${report.id}/" class="btn btn-sm btn-outline-danger">Hapus</a>`
+                    : '';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">${escapeHtml(report.title)}</div>
+                            <div class="text-secondary small">${escapeHtml(report.description)}</div>
+                        </td>
+                        <td>${escapeHtml(report.reporter_name)}</td>
+                        <td>${escapeHtml(report.category)}</td>
+                        <td>${escapeHtml(report.location)}</td>
+                        <td><span class="badge rounded-pill ${escapeHtml(report.status_badge_class)}">${escapeHtml(report.status)}</span></td>
+                        <td>${escapeHtml(report.created_at)}</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-report-detail data-url="/report/${report.id}/json/">Detail</button>
+                                ${editButtons}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function searchReports() {
+            const query = searchInput.value.trim();
+            const url = `{% url 'report_search' %}?q=${encodeURIComponent(query)}`;
+
+            searchStatus.textContent = 'Mencari data...';
+            fetch(url)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    console.log('Live search JSON diterima:', data);
+                    renderRows(data.results);
+                    searchStatus.textContent = data.results.length + ' laporan ditampilkan.';
+                });
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(searchReports, 350);
+        });
+
+        tableBody.addEventListener('click', function (event) {
+            const detailButton = event.target.closest('[data-report-detail]');
+            if (!detailButton) {
+                return;
+            }
+
+            modalTitle.textContent = 'Detail Laporan';
+            modalMeta.textContent = 'Memuat data...';
+            modalBody.innerHTML = '<div class="text-center text-secondary py-4">Memuat detail laporan...</div>';
+            modal.show();
+
+            fetch(detailButton.dataset.url)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (report) {
+                    console.log('Detail modal JSON diterima:', report);
+                    modalTitle.textContent = report.title;
+                    modalMeta.textContent = report.category + ' | ' + report.created_at;
+                    modalBody.innerHTML = `
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge rounded-pill text-bg-dark">${escapeHtml(report.category)}</span>
+                            <span class="badge rounded-pill ${escapeHtml(report.status_badge_class)}">${escapeHtml(report.status)}</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="text-secondary small">Pelapor</div>
+                                <div class="fw-semibold">${escapeHtml(report.reporter_name)}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-secondary small">Lokasi</div>
+                                <div class="fw-semibold">${escapeHtml(report.location)}</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-secondary small">Deskripsi</div>
+                                <p class="mb-0">${escapeHtml(report.description)}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+        });
+    });
+</script>
 {% endblock %}
