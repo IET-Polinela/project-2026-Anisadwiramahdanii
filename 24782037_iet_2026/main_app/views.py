@@ -5,6 +5,7 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .forms import ReportForm
+from .mixins import AdminRequiredMixin
 from .models import Report
 
 
@@ -43,7 +44,7 @@ class ReportDetailView(DetailView):
         return context
 
 
-class ReportCreateView(CreateView):
+class ReportCreateView(AdminRequiredMixin, CreateView):
     model = Report
     form_class = ReportForm
     template_name = 'main_app/report_form.html'
@@ -54,7 +55,7 @@ class ReportCreateView(CreateView):
         return super().form_valid(form)
 
 
-class ReportUpdateView(UpdateView):
+class ReportUpdateView(AdminRequiredMixin, UpdateView):
     model = Report
     form_class = ReportForm
     template_name = 'main_app/report_form.html'
@@ -65,7 +66,7 @@ class ReportUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-class ReportDeleteView(DeleteView):
+class ReportDeleteView(AdminRequiredMixin, DeleteView):
     model = Report
     template_name = 'main_app/report_confirm_delete.html'
     success_url = reverse_lazy('report_list')
@@ -75,7 +76,7 @@ class ReportDeleteView(DeleteView):
         return super().form_valid(form)
 
 
-class ReportUpdateStatusView(View):
+class ReportUpdateStatusView(AdminRequiredMixin, View):
     def post(self, request, pk):
         report = get_object_or_404(Report, pk=pk)
         next_status = report.next_status

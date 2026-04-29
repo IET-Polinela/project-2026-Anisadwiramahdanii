@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'main_app',   
     'about',
     'contacts',
+    '24782037_iet_2026.usermanagement_24782037.apps.Usermanagement24782037Config',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'iet_24782037_2026.wsgi.application'
+
+AUTH_USER_MODEL = 'usermanagement_24782037.User'
 
 
 # Database
@@ -123,3 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'

@@ -10,8 +10,10 @@
         </div>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a href="{% url 'update_report' object.pk %}" class="btn btn-outline-warning">Edit</a>
-        <a href="{% url 'delete_report' object.pk %}" class="btn btn-outline-danger">Hapus</a>
+        {% if user.is_authenticated and user.is_admin %}
+            <a href="{% url 'update_report' object.pk %}" class="btn btn-outline-warning">Edit</a>
+            <a href="{% url 'delete_report' object.pk %}" class="btn btn-outline-danger">Hapus</a>
+        {% endif %}
         <a href="{% url 'report_list' %}" class="btn btn-outline-secondary">Kembali</a>
     </div>
 </div>
@@ -51,14 +53,18 @@
                     Alur valid: Reported -> Verified -> In Progress -> Resolved.
                 </p>
 
-                {% if object.next_status %}
+                {% if user.is_authenticated and user.is_admin and object.next_status %}
                     <form method="post" action="{% url 'update_status' object.pk %}">
                         {% csrf_token %}
                         <input type="hidden" name="status" value="{{ object.next_status.value }}">
-                        <button type="submit" class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-primary w-100" data-loading-button data-loading-text="Memproses...">
                             Ubah ke {{ object.next_status.label }}
                         </button>
                     </form>
+                {% elif not user.is_authenticated or not user.is_admin %}
+                    <div class="alert alert-light border mb-0">
+                        Hanya admin yang dapat mengubah workflow laporan.
+                    </div>
                 {% else %}
                     <div class="alert alert-success mb-0">
                         Laporan sudah mencapai status akhir dan tidak bisa diubah lagi.

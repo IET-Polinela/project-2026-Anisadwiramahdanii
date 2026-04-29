@@ -6,9 +6,11 @@
         <h1 class="section-title h2 mb-1">Daftar Laporan</h1>
         <p class="text-secondary mb-0">Tabel laporan dengan status, lokasi, dan aksi pengelolaan.</p>
     </div>
-    <a href="{% url 'create_report' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i>Tambah Laporan
-    </a>
+    {% if user.is_authenticated and user.is_admin %}
+        <a href="{% url 'create_report' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Tambah Laporan
+        </a>
+    {% endif %}
 </div>
 
 <div class="table-responsive">
@@ -39,8 +41,10 @@
                     <td>
                         <div class="d-flex flex-wrap gap-2">
                             <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Detail</a>
-                            <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
-                            <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">Hapus</a>
+                            {% if user.is_authenticated and user.is_admin %}
+                                <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                                <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">Hapus</a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
