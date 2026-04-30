@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'main_app',   
     'about',
     'contacts',
-    '24782037_iet_2026.dashboard_24782037.apps.Dashboard24782037Config',
     '24782037_iet_2026.usermanagement_24782037.apps.Usermanagement24782037Config',
 ]
 
