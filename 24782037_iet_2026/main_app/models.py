@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 
 STATUS_CHOICES = [
     ('REPORTED', 'Reported'),
@@ -38,6 +39,9 @@ class Report(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('report_detail', kwargs={'pk': self.pk})
 
     def clean(self):
         valid_statuses = [choice[0] for choice in STATUS_CHOICES]

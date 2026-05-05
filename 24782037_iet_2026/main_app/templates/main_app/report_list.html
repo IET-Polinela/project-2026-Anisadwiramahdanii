@@ -1,16 +1,161 @@
 {% extends 'main_app/base.html' %}
 
 {% block content %}
+<style>
+    #reportFetchOverlay {
+        align-items: center;
+        background: rgba(5, 8, 12, 0.78);
+        display: none;
+        inset: 0;
+        justify-content: center;
+        padding: 1rem;
+        position: fixed;
+        z-index: 99999;
+    }
+
+    #reportFetchOverlay.is-visible {
+        display: flex;
+    }
+
+    #reportFetchOverlay .report-detail-card {
+        color: #f8fafc !important;
+        background: #171a21 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 0.65rem;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+        max-height: 90vh;
+        max-width: 760px;
+        overflow-y: auto;
+        position: relative;
+        width: min(760px, 100%);
+        z-index: 100000;
+    }
+
+    #reportFetchOverlay .report-detail-header {
+        align-items: flex-start;
+        border-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 1.15rem 1.25rem 0.25rem;
+    }
+
+    #reportFetchOverlay .report-detail-title {
+        color: #f8fafc !important;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    #reportFetchOverlay .report-detail-heading {
+        color: #f8fafc;
+        font-size: 1.03rem;
+        font-weight: 800;
+        line-height: 1.35;
+        margin-top: 0.35rem;
+    }
+
+    #reportFetchOverlay .report-detail-close {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: #aeb4c0;
+        display: inline-flex;
+        font-size: 1.5rem;
+        height: 2rem;
+        justify-content: center;
+        line-height: 1;
+        padding: 0;
+        width: 2rem;
+    }
+
+    #reportFetchOverlay .report-detail-close:hover {
+        color: #ffffff;
+    }
+
+    #reportFetchOverlay .report-detail-body {
+        padding: 0.55rem 1.25rem 1.25rem;
+    }
+
+    #reportFetchOverlay .report-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    #reportFetchOverlay .report-detail-field-full {
+        grid-column: 1 / -1;
+    }
+
+    #reportFetchOverlay .report-detail-field,
+    #reportFetchOverlay .report-detail-description {
+        background: #20242d !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+
+    #reportFetchOverlay .report-detail-label {
+        color: #aeb4c0;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+
+    #reportFetchOverlay .report-detail-value {
+        color: #f8fafc;
+        font-size: 0.86rem;
+        line-height: 1.55;
+    }
+
+    #reportFetchOverlay .badge {
+        font-size: 0.68rem;
+        padding: 0.45rem 0.7rem;
+    }
+
+    #reportFetchOverlay .text-bg-dark {
+        background-color: #6a3737 !important;
+        color: #fff !important;
+    }
+
+    @media (max-width: 576px) {
+        #reportFetchOverlay .report-detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
         <h1 class="section-title h2 mb-1">Daftar Laporan</h1>
-        <p class="text-secondary mb-0">Tabel laporan dengan status, lokasi, dan aksi pengelolaan.</p>
+        <p class="text-secondary mb-0">Tabel laporan dengan live search dan detail instan tanpa reload.</p>
     </div>
     {% if user.is_authenticated and user.is_admin %}
         <a href="{% url 'create_report' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Tambah Laporan
         </a>
     {% endif %}
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <label for="reportSearchInput" class="form-label fw-semibold">Cari laporan</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input
+                type="search"
+                class="form-control"
+                id="reportSearchInput"
+                placeholder="Cari judul, pelapor, kategori, lokasi..."
+                autocomplete="off"
+                value="{{ request.GET.q|default:'' }}"
+            >
+        </div>
+        <div class="form-text" id="searchStatus">Menampilkan data laporan terbaru.</div>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -26,7 +171,7 @@
                 <th>Aksi</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="reportTableBody">
             {% for report in reports %}
                 <tr>
                     <td>
@@ -40,7 +185,14 @@
                     <td>{{ report.created_at|date:"d M Y, H:i" }}</td>
                     <td>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Detail</a>
+                            <a
+                                href="{% url 'report_detail' report.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                                data-fetch-report-detail
+                                data-url="{% url 'report_detail_json' report.pk %}"
+                            >
+                                Detail
+                            </a>
                             {% if user.is_authenticated and user.is_admin %}
                                 <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
                                 <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">Hapus</a>
@@ -56,4 +208,215 @@
         </tbody>
     </table>
 </div>
+
+<div id="reportFetchOverlay" aria-labelledby="reportFetchOverlayLabel" aria-hidden="true" role="dialog">
+    <div class="report-detail-card">
+        <div class="report-detail-header">
+            <div>
+                <h2 class="report-detail-title" id="reportFetchOverlayLabel">Detail Laporan</h2>
+                <div class="text-secondary small" id="reportDetailMeta">Memuat data...</div>
+            </div>
+            <button type="button" class="report-detail-close" data-report-close aria-label="Tutup">&times;</button>
+        </div>
+        <div class="report-detail-body" id="reportDetailBody">
+            <div class="text-center text-secondary py-4">Memuat detail laporan...</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('reportSearchInput');
+        const searchStatus = document.getElementById('searchStatus');
+        const tableBody = document.getElementById('reportTableBody');
+        const canManageReports = {% if user.is_authenticated and user.is_admin %}true{% else %}false{% endif %};
+        let debounceTimer = null;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function renderRows(reports) {
+            if (!reports.length) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary py-4">Tidak ada laporan yang cocok.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = reports.map(function (report) {
+                const summary = report.summary || report.description;
+                const editButtons = canManageReports
+                    ? `<a href="/report/update/${report.id}/" class="btn btn-sm btn-outline-warning">Edit</a>`
+                        + `<a href="/report/delete/${report.id}/" class="btn btn-sm btn-outline-danger">Hapus</a>`
+                    : '';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">${escapeHtml(report.title)}</div>
+                            <div class="text-secondary small">${escapeHtml(summary)}</div>
+                        </td>
+                        <td>${escapeHtml(report.reporter_name)}</td>
+                        <td>${escapeHtml(report.category)}</td>
+                        <td>${escapeHtml(report.location)}</td>
+                        <td><span class="badge rounded-pill ${escapeHtml(report.status_badge_class)}">${escapeHtml(report.status)}</span></td>
+                        <td>${escapeHtml(report.created_at)}</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a
+                                    href="${escapeHtml(report.detail_url)}"
+                                    class="btn btn-sm btn-outline-primary"
+                                    data-fetch-report-detail
+                                    data-url="${escapeHtml(report.detail_json_url)}"
+                                >Detail</a>
+                                ${editButtons}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function searchReports() {
+            const query = searchInput.value.trim();
+            const url = `{% url 'report_search' %}?q=${encodeURIComponent(query)}`;
+
+            searchStatus.textContent = 'Mencari data...';
+            fetch(url)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    renderRows(data.results);
+                    searchStatus.textContent = data.results.length + ' laporan ditampilkan.';
+                });
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(searchReports, 350);
+        });
+
+        document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+            backdrop.remove();
+        });
+        document.body.classList.remove('modal-open');
+
+        const modalElement = document.getElementById('reportFetchOverlay');
+        const modalTitle = document.getElementById('reportFetchOverlayLabel');
+        const modalMeta = document.getElementById('reportDetailMeta');
+        const modalBody = document.getElementById('reportDetailBody');
+
+        if (modalElement && modalElement.parentElement !== document.body) {
+            document.body.appendChild(modalElement);
+        }
+
+        function showReportModal() {
+            modalElement.classList.add('is-visible');
+            modalElement.setAttribute('aria-hidden', 'false');
+            modalElement.style.alignItems = 'center';
+            modalElement.style.background = 'rgba(5, 8, 12, 0.78)';
+            modalElement.style.display = 'flex';
+            modalElement.style.inset = '0';
+            modalElement.style.justifyContent = 'center';
+            modalElement.style.padding = '1rem';
+            modalElement.style.position = 'fixed';
+            modalElement.style.zIndex = '99999';
+            document.body.classList.add('modal-open');
+        }
+
+        function hideReportModal() {
+            modalElement.classList.remove('is-visible');
+            modalElement.setAttribute('aria-hidden', 'true');
+            modalElement.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function renderReportDetail(report) {
+            modalTitle.textContent = 'Detail Laporan';
+            modalMeta.innerHTML = `<div class="report-detail-heading">${escapeHtml(report.title)}</div>`;
+            modalBody.innerHTML = `
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge rounded-pill ${escapeHtml(report.status_badge_class)}">${escapeHtml(report.status)}</span>
+                    <span class="badge rounded-pill text-bg-dark">${escapeHtml(report.category)}</span>
+                </div>
+                <div class="report-detail-grid mb-4">
+                    <div class="report-detail-field">
+                        <div class="report-detail-label">Pelapor</div>
+                        <div class="report-detail-value fw-semibold">${escapeHtml(report.reporter_name)}</div>
+                    </div>
+                    <div class="report-detail-field">
+                        <div class="report-detail-label">Lokasi</div>
+                        <div class="report-detail-value fw-semibold">${escapeHtml(report.location)}</div>
+                    </div>
+                    <div class="report-detail-field report-detail-field-full">
+                        <div class="report-detail-label">Dibuat pada</div>
+                        <div class="report-detail-value fw-semibold">${escapeHtml(report.created_at)}</div>
+                    </div>
+                </div>
+                <div class="report-detail-description">
+                    <div class="report-detail-label">Deskripsi</div>
+                    <p class="report-detail-value fw-semibold mb-0">${escapeHtml(report.description)}</p>
+                </div>
+            `;
+        }
+
+        document.addEventListener('click', function (event) {
+            if (event.target.closest('[data-report-close]') || event.target === modalElement) {
+                hideReportModal();
+                return;
+            }
+
+            const detailButton = event.target.closest('[data-fetch-report-detail]');
+            if (!detailButton) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            modalTitle.textContent = 'Detail Laporan';
+            modalMeta.textContent = 'Memuat data dari Fetch API...';
+            modalBody.innerHTML = '<div class="text-center text-secondary py-4">Memuat detail laporan...</div>';
+            showReportModal();
+            document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+                backdrop.remove();
+            });
+
+            console.log('Mengambil detail laporan dengan Fetch API:', detailButton.dataset.url);
+            fetch(detailButton.dataset.url)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    console.log('Data JSON detail laporan berhasil diterima dari Fetch API:', data);
+                    renderReportDetail(data);
+                })
+                .catch(function (error) {
+                    console.error('Fetch API detail laporan gagal:', error);
+                    modalMeta.textContent = 'Gagal memuat data';
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            Detail laporan belum bisa ditampilkan. Cek Console dan tab Network di browser.
+                        </div>
+                    `;
+                });
+        }, true);
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modalElement.classList.contains('is-visible')) {
+                hideReportModal();
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -88,7 +88,16 @@
                         <td>{{ report.location }}</td>
                         <td><span class="badge rounded-pill {{ report.status_badge_class }}">{{ report.get_status_display }}</span></td>
                         <td>
-                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">Detail</a>
+                            <a
+                                href="{% url 'report_detail' report.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                                data-report-detail
+                                data-url="{% url 'report_detail_json' report.pk %}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#reportDetailModal"
+                            >
+                                Detail
+                            </a>
                         </td>
                     </tr>
                 {% empty %}
@@ -100,4 +109,21 @@
         </table>
     </div>
 </section>
+
+<div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title h5" id="reportDetailModalLabel">Detail Laporan</h2>
+                    <div class="text-secondary small" id="reportDetailMeta">Memuat data...</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body" id="reportDetailBody">
+                <div class="text-center text-secondary py-4">Memuat detail laporan...</div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

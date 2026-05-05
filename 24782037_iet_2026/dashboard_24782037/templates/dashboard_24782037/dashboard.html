@@ -14,7 +14,7 @@
 <div class="row g-4 mb-4">
     <div class="col-lg-5">
         <div class="card shadow-sm h-100">
-            <div class="card-body p-4">
+            <div class="card-body p-4" style="background: linear-gradient(135deg, rgba(255, 232, 244, 0.95), rgba(255, 247, 251, 0.96));">
                 <h2 class="h5 mb-3">Distribusi Status</h2>
                 <canvas id="statusChart" height="260"></canvas>
             </div>
@@ -22,7 +22,7 @@
     </div>
     <div class="col-lg-7">
         <div class="card shadow-sm h-100">
-            <div class="card-body p-4">
+            <div class="card-body p-4" style="background: linear-gradient(135deg, rgba(255, 238, 247, 0.95), rgba(245, 240, 255, 0.96));">
                 <h2 class="h5 mb-3">Distribusi Kategori</h2>
                 <canvas id="categoryChart" height="260"></canvas>
             </div>
@@ -116,9 +116,19 @@
                         labels: data.status_distribution.labels,
                         datasets: [{
                             data: data.status_distribution.data,
-                            backgroundColor: ['#f5b942', '#38bdf8', '#4f46e5', '#22c55e'],
-                            borderWidth: 1
+                            backgroundColor: ['#ff8fab', '#ffb3c6', '#cdb4db', '#a2d2ff'],
+                            borderColor: '#fff7fb',
+                            borderWidth: 3
                         }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#7a4b64'
+                                }
+                            }
+                        }
                     }
                 });
 
@@ -129,16 +139,37 @@
                         datasets: [{
                             label: 'Jumlah laporan',
                             data: data.category_distribution.data,
-                            backgroundColor: '#d96f32',
-                            borderRadius: 6
+                            backgroundColor: ['#ffafcc', '#ffc8dd', '#cdb4db', '#bde0fe', '#a2d2ff', '#f9bec7'],
+                            borderColor: '#fff7fb',
+                            borderWidth: 2,
+                            borderRadius: 12
                         }]
                     },
                     options: {
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#7a4b64'
+                                }
+                            }
+                        },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    precision: 0
+                                    precision: 0,
+                                    color: '#8b5e77'
+                                },
+                                grid: {
+                                    color: 'rgba(205, 180, 219, 0.35)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#8b5e77'
+                                },
+                                grid: {
+                                    display: false
                                 }
                             }
                         }
@@ -151,4 +182,3 @@
     });
 </script>
 {% endblock %}
-
