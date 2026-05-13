@@ -1,8 +1,10 @@
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
 STATUS_CHOICES = [
+    ('DRAFT', 'Draft'),
     ('REPORTED', 'Reported'),
     ('VERIFIED', 'Verified'),
     ('IN_PROGRESS', 'In Progress'),
@@ -10,6 +12,7 @@ STATUS_CHOICES = [
 ]
 
 STATUS_TRANSITIONS = {
+    'DRAFT': 'REPORTED',
     'REPORTED': 'VERIFIED',
     'VERIFIED': 'IN_PROGRESS',
     'IN_PROGRESS': 'RESOLVED',
@@ -17,6 +20,7 @@ STATUS_TRANSITIONS = {
 }
 
 STATUS_BADGE_CLASSES = {
+    'DRAFT': 'text-bg-secondary',
     'REPORTED': 'text-bg-warning',
     'VERIFIED': 'text-bg-info',
     'IN_PROGRESS': 'text-bg-primary',
@@ -25,6 +29,13 @@ STATUS_BADGE_CLASSES = {
 
 
 class Report(models.Model):
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='reports',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     reporter_name = models.CharField(max_length=100)
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=100)
@@ -36,6 +47,7 @@ class Report(models.Model):
         default='REPORTED',
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
