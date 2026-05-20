@@ -23,3 +23,18 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_reporter(self, obj):
         return 'Warga Anonim'
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+
+        if (
+            request
+            and request.method in ['PUT', 'PATCH']
+            and not request.user.is_admin
+            and 'status' in self.initial_data
+        ):
+            raise serializers.ValidationError({
+                'status': 'Status hanya dapat diubah oleh Admin.'
+            })
+
+        return attrs

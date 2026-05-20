@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-=u+3@z7ou0bmi=k0d&ndo0ot+_2b8kynnxr2we#qds!!o@h9)l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 
 # Application definition
@@ -38,12 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
 
     'main_app',   
     'about',
     'contacts',
-    '24782037_iet_2026.dashboard_24782037.apps.Dashboard24782037Config',
-    '24782037_iet_2026.usermanagement_24782037.apps.Usermanagement24782037Config',
+    'dashboard_24782037.apps.Dashboard24782037Config',
+    'usermanagement_24782037.apps.Usermanagement24782037Config',
 ]
 
 MIDDLEWARE = [
@@ -84,7 +85,7 @@ AUTH_USER_MODEL = 'usermanagement_24782037.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Smartcity_db',  # SESUAIKAN DENGAN PGADMIN
+        'NAME': 'db_warung_037',
         'USER': 'postgres',
         'PASSWORD': 'nisa',
         'HOST': 'localhost',
@@ -133,3 +134,8 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}

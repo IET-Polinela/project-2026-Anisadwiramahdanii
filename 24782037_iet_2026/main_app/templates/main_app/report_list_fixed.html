@@ -2,15 +2,17 @@
 
 {% block content %}
 <style>
+    /* Style Overlay Dark Mode kamu */
     #reportFetchOverlay {
         align-items: center;
-        background: rgba(5, 8, 12, 0.78);
+        background: rgba(5, 8, 12, 0.85);
         display: none;
         inset: 0;
         justify-content: center;
         padding: 1rem;
         position: fixed;
         z-index: 99999;
+        backdrop-filter: blur(4px);
     }
 
     #reportFetchOverlay.is-visible {
@@ -20,141 +22,116 @@
     #reportFetchOverlay .report-detail-card {
         color: #f8fafc !important;
         background: #171a21 !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 0.65rem;
         box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
         max-height: 90vh;
-        max-width: 760px;
+        max-width: 600px;
         overflow-y: auto;
         position: relative;
-        width: min(760px, 100%);
+        width: 100%;
         z-index: 100000;
     }
 
-    /* rest CSS same */
     #reportFetchOverlay .report-detail-header {
-        align-items: flex-start;
-        border-bottom: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         display: flex;
         justify-content: space-between;
-        padding: 1.15rem 1.25rem 0.25rem;
+        padding: 1.25rem;
     }
 
     #reportFetchOverlay .report-detail-title {
         color: #f8fafc !important;
-        font-size: 0.68rem;
+        font-size: 0.75rem;
         font-weight: 800;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.05em;
         margin: 0;
         text-transform: uppercase;
-    }
-
-    #reportFetchOverlay .report-detail-heading {
-        color: #f8fafc;
-        font-size: 1.03rem;
-        font-weight: 800;
-        line-height: 1.35;
-        margin-top: 0.35rem;
+        opacity: 0.7;
     }
 
     #reportFetchOverlay .report-detail-close {
-        align-items: center;
         background: transparent;
         border: 0;
         color: #aeb4c0;
-        display: inline-flex;
         font-size: 1.5rem;
-        height: 2rem;
-        justify-content: center;
-        line-height: 1;
-        padding: 0;
-        width: 2rem;
-    }
-
-    #reportFetchOverlay .report-detail-close:hover {
-        color: #ffffff;
+        cursor: pointer;
     }
 
     #reportFetchOverlay .report-detail-body {
-        padding: 0.55rem 1.25rem 1.25rem;
+        padding: 1.25rem;
     }
 
-    #reportFetchOverlay .report-detail-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
+    .detail-item {
+        background: #20242d;
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
     }
 
-    #reportFetchOverlay .report-detail-field-full {
-        grid-column: 1 / -1;
-    }
-
-    #reportFetchOverlay .report-detail-field,
-    #reportFetchOverlay .report-detail-description {
-        background: #20242d !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 0.5rem;
-        padding: 1rem;
-    }
-
-    #reportFetchOverlay .report-detail-label {
-        color: #aeb4c0;
-        font-size: 0.68rem;
+    .detail-label {
+        font-size: 0.65rem;
         font-weight: 800;
-        letter-spacing: 0.04em;
+        color: #aeb4c0;
         text-transform: uppercase;
-        margin-bottom: 0.45rem;
+        margin-bottom: 4px;
     }
 
-    #reportFetchOverlay .report-detail-value {
+    .detail-value {
+        font-size: 0.9rem;
         color: #f8fafc;
-        font-size: 0.86rem;
-        line-height: 1.55;
-    }
-
-    #reportFetchOverlay .badge {
-        font-size: 0.68rem;
-        padding: 0.45rem 0.7rem;
-    }
-
-    #reportFetchOverlay .text-bg-dark {
-        background-color: #6a3737 !important;
-        color: #fff !important;
-    }
-
-    @media (max-width: 576px) {
-        #reportFetchOverlay .report-detail-grid {
-            grid-template-columns: 1fr;
-        }
     }
 </style>
 
-<!-- rest of content same as original -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
         <h1 class="section-title h2 mb-1">Daftar Laporan</h1>
-        <p class="text-secondary mb-0">Tabel laporan dengan live search dan detail instan tanpa reload.</p>
+        <p class="text-secondary mb-0">Tabel laporan dengan detail instan.</p>
     </div>
-    {% if user.is_authenticated and user.is_admin %}
-        <a href="{% url 'create_report' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i>Tambah Laporan
-        </a>
-    {% endif %}
 </div>
 
-<!-- search and table same -->
+<!-- Tabel Laporan -->
+<div class="card bg-dark border-secondary">
+    <div class="card-body p-0">
+        <table class="table table-dark table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td><span class="badge bg-primary">{{ report.status }}</span></td>
+                    <td>{{ report.created_at|date:"d M Y" }}</td>
+                    <td>
+                        <!-- Tombol Detail -->
+                        <button class="btn btn-sm btn-warning btn-detail-trigger" data-id="{{ report.id }}" style="background-color: #d18a5e; border: none; color: white;">
+                            Detail
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-<div id="reportFetchOverlay" aria-labelledby="reportFetchOverlayLabel" aria-hidden="true" role="dialog">
+<!-- Overlay Detail Laporan -->
+<div id="reportFetchOverlay" role="dialog" aria-hidden="true">
     <div class="report-detail-card">
         <div class="report-detail-header">
             <div>
-                <h2 class="report-detail-title" id="reportFetchOverlayLabel">Detail Laporan</h2>
-                <div class="text-secondary small" id="reportDetailMeta">Memuat data...</div>
+                <h2 class="report-detail-title">Detail Laporan</h2>
+                <div id="reportDetailMeta" style="color: #f8fafc; font-weight: bold; font-size: 1.1rem; margin-top: 5px;">Memuat...</div>
             </div>
-            <button type="button" class="report-detail-close" data-report-close aria-label="Tutup">&times;</button>
+            <button type="button" class="report-detail-close" id="closeOverlay">&times;</button>
         </div>
         <div class="report-detail-body" id="reportDetailBody">
-            <div class="text-center text-secondary py-4">Memuat detail laporan...</div>
+            <!-- Data JSON akan di-render di sini -->
         </div>
     </div>
 </div>
@@ -163,24 +140,78 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // all JS same but with fixes
-        const modalElement = document.getElementById('reportFetchOverlay');
-        document.body.appendChild(modalElement); // always move
+document.addEventListener('DOMContentLoaded', function () {
+    const overlay = document.getElementById('reportFetchOverlay');
+    const closeBtn = document.getElementById('closeOverlay');
+    const modalBody = document.getElementById('reportDetailBody');
+    const modalMeta = document.getElementById('reportDetailMeta');
 
-        function showReportModal() {
-            console.log('Show modal called');
-            modalElement.style.display = 'flex';
-            modalElement.classList.add('is-visible');
-            document.body.classList.add('modal-open');
-            document.body.style.overflow = 'hidden';
-        }
+    // Fungsi Tutup Modal
+    function closeReportModal() {
+        overlay.classList.remove('is-visible');
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
 
-        // other functions same, with console.logs
-
-        // event listener same, with more logs
-
-        console.log('Script loaded, modal ready');
+    closeBtn.addEventListener('click', closeReportModal);
+    
+    // Klik di luar card untuk tutup
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeReportModal();
     });
+
+    // Handle Klik Tombol Detail
+    document.querySelectorAll('.btn-detail-trigger').forEach(button => {
+        button.addEventListener('click', function() {
+            const reportId = this.getAttribute('data-id');
+            
+            // Munculkan overlay & loading state
+            overlay.style.display = 'flex';
+            overlay.classList.add('is-visible');
+            document.body.style.overflow = 'hidden';
+            modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-warning"></div></div>';
+            modalMeta.innerText = "Memuat data...";
+
+            // FETCH DATA
+            fetch(`/report-detail-json/${reportId}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Gagal mengambil data');
+                    return response.json();
+                })
+                .then(data => {
+                    // 1. MUNCULIN DI CONSOLE (PERSIS SEPERTI GAMBAR KAMU)
+                    console.log("DETAIL:");
+                    console.log(data);
+
+                    // 2. UPDATE TAMPILAN MODAL
+                    modalMeta.innerText = data.title;
+                    modalBody.innerHTML = `
+                        <div class="detail-item">
+                            <div class="detail-label">KATEGORI</div>
+                            <div class="detail-value">${data.category}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">LOKASI</div>
+                            <div class="detail-value">${data.location}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">STATUS</div>
+                            <div class="detail-value"><span class="badge bg-primary">${data.status}</span></div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">DESKRIPSI</div>
+                            <div class="detail-value">${data.description}</div>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    modalBody.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+                });
+        });
+    });
+
+    console.log('Script loaded, modal ready');
+});
 </script>
 {% endblock %}
