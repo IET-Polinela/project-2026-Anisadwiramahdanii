@@ -86,8 +86,9 @@ class ReportJWTAPITests(APITestCase):
         list_response = self.client.get('/api/reports/')
 
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(list_response.data), 1)
-        self.assertEqual(list_response.data[0]['reporter'], 'Warga Anonim')
+        self.assertEqual(len(list_response.data['results']), 1)
+        self.assertEqual(list_response.data['results'][0]['reporter'], 'Warga Anonim')
+        self.assertTrue(list_response.data['results'][0]['is_owner'])
 
     def test_owner_cannot_delete_verified_report(self):
         user = get_user_model().objects.create_user(
@@ -162,7 +163,7 @@ class ReportJWTAPITests(APITestCase):
         admin_response = self.client.get('/api/reports/')
         self.assertEqual(admin_response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            {report['id'] for report in admin_response.data},
+            {report['id'] for report in admin_response.data['results']},
             {verified_report.id},
         )
         self.assertEqual(
@@ -174,7 +175,7 @@ class ReportJWTAPITests(APITestCase):
         citizen1_response = self.client.get('/api/reports/')
         self.assertEqual(citizen1_response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            {report['id'] for report in citizen1_response.data},
+            {report['id'] for report in citizen1_response.data['results']},
             {verified_report.id, report1.id},
         )
         self.assertEqual(
@@ -190,9 +191,91 @@ class ReportJWTAPITests(APITestCase):
         citizen2_response = self.client.get('/api/reports/')
         self.assertEqual(citizen2_response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            {report['id'] for report in citizen2_response.data},
+            {report['id'] for report in citizen2_response.data['results']},
             {verified_report.id, report2.id},
         )
+
+    def test_lab12_tab_filtering_pagination_and_submission_flow(self):
+        citizen1 = get_user_model().objects.create_user(
+            username='anisa',
+            password=self.password,
+            is_admin=False,
+            is_member=True,
+        )
+        citizen2 = get_user_model().objects.create_user(
+            username='budi',
+            password=self.password,
+            is_admin=False,
+            is_member=True,
+        )
+        own_draft = Report.objects.create(
+            reporter=citizen1,
+            reporter_name='Warga Anonim',
+            title='Draft saya',
+            category='Infrastruktur',
+            description='Masih draft.',
+            location='Lokasi 1',
+            status='DRAFT',
+        )
+        own_reported = Report.objects.create(
+            reporter=citizen1,
+            reporter_name='Warga Anonim',
+            title='Laporan saya',
+            category='Umum',
+            description='Sudah diajukan.',
+            location='Lokasi 2',
+            status='REPORTED',
+        )
+        other_reported = Report.objects.create(
+            reporter=citizen2,
+            reporter_name='Warga Anonim',
+            title='Laporan warga lain',
+            category='Fasilitas',
+            description='Terlihat di feed.',
+            location='Lokasi 3',
+            status='REPORTED',
+        )
+        Report.objects.create(
+            reporter=citizen2,
+            reporter_name='Warga Anonim',
+            title='Draft warga lain',
+            category='Fasilitas',
+            description='Tidak boleh masuk feed.',
+            location='Lokasi 4',
+            status='DRAFT',
+        )
+
+        self.client.force_authenticate(user=citizen1)
+
+        my_reports = self.client.get('/api/reports/?tab=my_reports')
+        self.assertEqual(my_reports.status_code, status.HTTP_200_OK)
+        self.assertEqual(my_reports.data['count'], 2)
+        self.assertEqual(
+            {report['id'] for report in my_reports.data['results']},
+            {own_draft.id, own_reported.id},
+        )
+
+        feed = self.client.get('/api/reports/?tab=feed')
+        self.assertEqual(feed.status_code, status.HTTP_200_OK)
+        self.assertEqual(feed.data['count'], 1)
+        self.assertEqual(feed.data['results'][0]['id'], other_reported.id)
+        self.assertEqual(feed.data['results'][0]['reporter'], 'Warga Anonim')
+        self.assertFalse(feed.data['results'][0]['is_owner'])
+
+        submit_response = self.client.put(
+            f'/api/reports/{own_draft.id}/',
+            {
+                'title': own_draft.title,
+                'category': own_draft.category,
+                'description': own_draft.description,
+                'location': own_draft.location,
+                'status': 'REPORTED',
+            },
+            format='json',
+        )
+        self.assertEqual(submit_response.status_code, status.HTTP_200_OK)
+        own_draft.refresh_from_db()
+        self.assertEqual(own_draft.status, 'REPORTED')
 
     def test_admin_only_changes_status_and_citizen_manages_own_draft(self):
         admin = get_user_model().objects.create_superuser(

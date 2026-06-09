@@ -23,7 +23,6 @@ class IsOwnerAndDraft(permissions.BasePermission):
             and obj.status == 'DRAFT'
         )
 
-
 class IsAdminStatusOnlyOrOwnerAndDraft(permissions.BasePermission):
     message = 'Admin hanya dapat mengubah status. Citizen hanya dapat mengubah atau menghapus draft miliknya.'
 

@@ -52,6 +52,19 @@ body {
     border-radius: 8px;
 }
 
+.report-progress {
+    height: 1.1rem;
+}
+
+#reportsPagination {
+    gap: .35rem;
+}
+
+#reportsPagination .page-link {
+    border-radius: 6px;
+    min-width: 2.25rem;
+}
+
 .activity-item {
     display: grid;
     grid-template-columns: 2rem 1fr;
