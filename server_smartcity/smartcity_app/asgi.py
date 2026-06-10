@@ -1,5 +1,5 @@
 """
-ASGI config for iet_24782037_2026 project.
+ASGI config for smartcity_app project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -14,8 +14,8 @@ from pathlib import Path
 from django.core.asgi import get_asgi_application
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR / '24782037_iet_2026'))
+sys.path.insert(0, str(BASE_DIR))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'iet_24782037_2026.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smartcity_app.settings')
 
 application = get_asgi_application()
