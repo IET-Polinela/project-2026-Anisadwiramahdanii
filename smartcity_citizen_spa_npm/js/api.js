@@ -1,10 +1,11 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'http://103.151.63.85:8005';
 
 async function requestAPI(endpoint, method = 'GET', bodyData = null) {
     const headers = {
         Accept: 'application/json',
         'Content-Type': 'application/json',
     };
+
     const accessToken = localStorage.getItem('access_token');
 
     if (accessToken) {
@@ -21,8 +22,11 @@ async function requestAPI(endpoint, method = 'GET', bodyData = null) {
     }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
     const contentType = response.headers.get('content-type') || '';
-    const data = contentType.includes('application/json') ? await response.json() : null;
+    const data = contentType.includes('application/json')
+        ? await response.json()
+        : null;
 
     if (!response.ok) {
         const error = new Error('Request gagal');

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -89,13 +90,21 @@ AUTH_USER_MODEL = 'usermanagement_24782037.User'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DATABASES = {
+# Allow using a lightweight SQLite DB locally by setting USE_SQLITE=1
+if os.environ.get('USE_SQLITE') == '1':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+   DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_warung_037',
-        'USER': 'postgres',
-        'PASSWORD': 'nisa',
+        'NAME': 'db_mhs05',
+        'USER': 'user_mhs05',
+        'PASSWORD': 'mhs05',
         'HOST': 'localhost',
         'PORT': '5432',
     }
