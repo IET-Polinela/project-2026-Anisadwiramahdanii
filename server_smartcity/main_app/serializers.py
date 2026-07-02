@@ -23,10 +23,10 @@ class ReportSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'reporter', 'created_at', 'updated_at']
 
-    def get_reporter(self, obj):
+    def get_reporter(self, obj) -> str:
         return 'Warga Anonim'
 
-    def get_is_owner(self, obj):
+    def get_is_owner(self, obj) -> bool:
         request = self.context.get('request')
         return bool(
             request
