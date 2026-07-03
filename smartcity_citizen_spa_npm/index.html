@@ -36,11 +36,11 @@
 
     <main id="app" class="app-shell"></main>
 
-    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalTitle" aria-hidden="true">
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title h5" id="reportModalTitle">Tambah Laporan Baru</h2>
+                    <h2 class="modal-title h5" id="reportModalLabel">Buat Laporan Baru</h2>
                     <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
@@ -49,11 +49,11 @@
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <label for="reportTitle" class="form-label">Judul</label>
-                                <input class="form-control" id="reportTitle" name="title" required>
+                                <input class="form-control" id="inputTitle" name="title" required>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label for="reportCategory" class="form-label">Kategori</label>
-                                <select class="form-select" id="reportCategory" name="category" required>
+                                <select class="form-select" id="inputCategory" name="category" required>
                                     <option value="">Pilih kategori</option>
                                     <option value="Infrastruktur">Infrastruktur</option>
                                     <option value="Fasilitas">Fasilitas</option>
@@ -65,21 +65,21 @@
                             </div>
                             <div class="col-12">
                                 <label for="reportLocation" class="form-label">Lokasi</label>
-                                <input class="form-control" id="reportLocation" name="location" required>
+                                <input class="form-control" id="inputLocation" name="location" required>
                             </div>
                             <div class="col-12">
                                 <label for="reportDescription" class="form-label">Deskripsi</label>
-                                <textarea class="form-control" id="reportDescription" name="description" rows="4" required></textarea>
+                                <textarea class="form-control" id="inputDescription" name="description" rows="4" required></textarea>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-outline-primary" id="saveDraftButton" type="button">
+                    <button class="btn btn-outline-primary" id="btnDraft" data-testid="btnDraft" type="button">
                         <i class="bi bi-save me-1"></i>Simpan Draft
                     </button>
-                    <button class="btn btn-primary" id="submitReportButton" type="button">
+                    <button class="btn btn-primary" id="btnSubmit" data-testid="btnSubmit" type="button">
                         <i class="bi bi-send me-1"></i>Ajukan
                     </button>
                 </div>

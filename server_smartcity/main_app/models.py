@@ -76,6 +76,11 @@ class Report(models.Model):
             'label': status_map[next_status_code],
         }
 
+    @property
+    def allowed_statuses(self):
+        next_entry = self.next_status
+        return [next_entry] if next_entry else []
+
 
 class ReportStatusChange(models.Model):
     report = models.ForeignKey(Report, related_name='status_changes', on_delete=models.CASCADE)

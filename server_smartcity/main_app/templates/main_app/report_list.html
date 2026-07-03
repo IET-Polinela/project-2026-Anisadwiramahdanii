@@ -142,13 +142,13 @@
 
 <div class="row mb-4">
     <div class="col-lg-6">
-        <label for="reportSearchInput" class="form-label fw-semibold">Cari laporan</label>
+        <label for="searchInput" class="form-label fw-semibold">Cari laporan</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input
                 type="search"
                 class="form-control"
-                id="reportSearchInput"
+                id="searchInput"
                 placeholder="Cari judul, pelapor, kategori, lokasi..."
                 autocomplete="off"
                 value="{{ request.GET.q|default:'' }}"
@@ -229,7 +229,7 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('reportSearchInput');
+        const searchInput = document.getElementById('searchInput');
         const searchStatus = document.getElementById('searchStatus');
         const tableBody = document.getElementById('reportTableBody');
         const canManageReports = {% if user.is_authenticated and user.is_admin %}true{% else %}false{% endif %};
@@ -318,6 +318,10 @@
             document.body.appendChild(modalElement);
         }
 
+        // expose CSRF token and admin flag to dynamic status form renderer
+        renderStatusForm.canManageReports = canManageReports;
+        renderStatusForm.csrfToken = "{{ csrf_token }}";
+
         function showReportModal() {
             modalElement.classList.add('is-visible');
             modalElement.setAttribute('aria-hidden', 'false');
@@ -364,6 +368,52 @@
                 <div class="report-detail-description">
                     <div class="report-detail-label">Deskripsi</div>
                     <p class="report-detail-value fw-semibold mb-0">${escapeHtml(report.description)}</p>
+                </div>
+                ${renderStatusForm(report)}
+            `;
+        }
+
+        function renderStatusForm(report) {
+            if (!renderStatusForm.canManageReports) {
+                return '';
+            }
+
+            if (!report.allowed_statuses || !report.allowed_statuses.length) {
+                return `
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-body p-4">
+                            <div class="alert alert-success mb-0">
+                                Laporan sudah mencapai status akhir dan tidak bisa diubah lagi.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const options = report.allowed_statuses.map(status => `
+                <option value="${escapeHtml(status.value)}">${escapeHtml(status.label)}</option>
+            `).join('');
+
+            return `
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 mb-3">Workflow Status</h2>
+                        <p class="text-secondary small mb-3">
+                            Alur valid: Reported -> Verified -> In Progress -> Resolved.
+                        </p>
+                        <form method="post" action="/report/${report.id}/status/">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(renderStatusForm.csrfToken)}">
+                            <div class="mb-3">
+                                <label for="statusSelect" class="form-label">Pilih status baru</label>
+                                <select id="statusSelect" name="status" class="form-select" required>
+                                    ${options}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" data-loading-button data-loading-text="Memproses...">
+                                Ubah status
+                            </button>
+                        </form>
+                    </div>
                 </div>
             `;
         }

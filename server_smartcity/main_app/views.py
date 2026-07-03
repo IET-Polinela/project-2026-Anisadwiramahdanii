@@ -119,10 +119,10 @@ class ReportDeleteView(AdminRequiredMixin, DeleteView):
 class ReportUpdateStatusView(AdminRequiredMixin, View):
     def post(self, request, pk):
         report = get_object_or_404(Report, pk=pk)
-        next_status = report.next_status
+        allowed_statuses = [status['value'] for status in report.allowed_statuses]
         requested_status = request.POST.get('status')
 
-        if not next_status or requested_status != next_status['value']:
+        if not allowed_statuses or requested_status not in allowed_statuses:
             messages.error(request, 'Perubahan status tidak sesuai alur workflow.')
             return redirect('report_detail', pk=report.pk)
 
@@ -130,12 +130,16 @@ class ReportUpdateStatusView(AdminRequiredMixin, View):
         report.status = requested_status
         report.full_clean()
         report.save(update_fields=['status'])
+
+        status_map = dict(report._meta.get_field('status').choices)
+        new_status_label = status_map.get(requested_status, requested_status)
+
         report.status_changes.create(
             old_status=old_status,
             new_status=requested_status,
-            note=f"Perubahan status dari {dict(report._meta.get_field('status').choices)[old_status]} ke {next_status['label']}",
+            note=f"Perubahan status dari {status_map.get(old_status, old_status)} ke {new_status_label}",
         )
-        messages.success(request, f"Status laporan berhasil diubah ke {next_status['label']}.")
+        messages.success(request, f"Status laporan berhasil diubah ke {new_status_label}.")
         return redirect('report_detail', pk=report.pk)
 
 
@@ -154,6 +158,7 @@ def serialize_report(report, include_description=False):
         'detail_json_url': reverse('report_detail_json', kwargs={'pk': report.pk}),
         'summary': report.description[:120],
         'description': report.description,
+        'allowed_statuses': report.allowed_statuses,
     }
 
     if include_description:

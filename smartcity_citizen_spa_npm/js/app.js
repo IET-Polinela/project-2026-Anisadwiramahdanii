@@ -5,8 +5,8 @@ let reportModal = null;
 
 async function setupDashboard() {
     const reloadButton = document.getElementById('reloadReports');
-    const openReportModalButton = document.getElementById('openReportModal');
-    const reportsPagination = document.getElementById('reportsPagination');
+    const openReportModalButton = document.getElementById('btnBukaModal');
+    const reportsPagination = document.getElementById('paginationContainer');
 
     if (reloadButton) {
         reloadButton.addEventListener('click', function () {
@@ -41,7 +41,7 @@ async function setupDashboard() {
 }
 
 async function loadDashboardData(tab = currentDashboardTab, page = currentDashboardPage) {
-    const target = document.getElementById('reportsList');
+    const target = document.getElementById('listContainer');
 
     currentDashboardTab = tab;
     currentDashboardPage = page;
@@ -73,7 +73,7 @@ async function loadDashboardData(tab = currentDashboardTab, page = currentDashbo
 
 async function loadSummaryStats() {
     try {
-        const result = await requestAPI('/api/reports/?tab=my_reports&page_size=1000', 'GET');
+        const result = await requestAPI('/api/report/?tab=my_reports&page_size=1000', 'GET');
         const reports = result.data.results || [];
         updateDashboardStats(reports);
     } catch (error) {
@@ -97,8 +97,8 @@ function updateDashboardTabUI(tab) {
 
 function setupReportForm() {
     const modalElement = document.getElementById('reportModal');
-    const saveDraftButton = document.getElementById('saveDraftButton');
-    const submitReportButton = document.getElementById('submitReportButton');
+    const saveDraftButton = document.getElementById('btnDraft');
+    const submitReportButton = document.getElementById('btnSubmit');
 
     if (!modalElement || !window.bootstrap) {
         return;
@@ -125,10 +125,10 @@ function setupReportForm() {
 
 function openCreateReportModal() {
     resetReportForm();
-    const title = document.getElementById('reportModalTitle');
+    const title = document.getElementById('reportModalLabel');
 
     if (title) {
-        title.textContent = 'Tambah Laporan Baru';
+        title.textContent = 'Buat Laporan Baru';
     }
 
     if (reportModal) {
@@ -148,7 +148,7 @@ async function editDraft(id) {
         editingReportId = id;
         fillReportForm(report);
 
-        const title = document.getElementById('reportModalTitle');
+        const title = document.getElementById('reportModalLabel');
         if (title) {
             title.textContent = 'Edit Draft Laporan';
         }
@@ -189,7 +189,7 @@ async function submitReportForm(status) {
         status,
     };
     const isEditing = editingReportId !== null;
-    const endpoint = isEditing ? `/api/reports/${editingReportId}/` : '/api/reports/';
+    const endpoint = isEditing ? `/api/report/${editingReportId}/` : '/api/report/';
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -201,6 +201,7 @@ async function submitReportForm(status) {
             }
 
             resetReportForm();
+            alert(`Laporan berhasil disimpan sebagai ${status}`);
             await loadDashboardData('my_reports', 1);
         }
     } catch (error) {

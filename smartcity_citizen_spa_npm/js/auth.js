@@ -25,6 +25,7 @@ function setupLoginForm() {
 
             localStorage.setItem('access_token', result.data.access);
             localStorage.setItem('refresh_token', result.data.refresh);
+            localStorage.setItem('username', payload.username);
 
             alert('Login berhasil.');
             window.location.hash = '#dashboard';
@@ -39,6 +40,8 @@ function setupLoginForm() {
 function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('username');
+
     updateAuthUI();
     window.location.hash = '#login';
 }

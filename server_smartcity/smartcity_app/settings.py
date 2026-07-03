@@ -7,11 +7,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 SECRET_KEY = 'django-insecure-%j_c-&4e-fsl%_1c9qbh8dfx3v)$gh-z=l^_#w2lke46-mgnw6'
 DEBUG = True
-ALLOWED_HOSTS = ['103.151.63.85', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['103.151.63.85', 'localhost', '127.0.0.1', '0.0.0.0', 'testserver']
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
     'http://103.151.63.85:8005',
+    'http://127.0.0.1:8005',
+    'http://0.0.0.0:8005',
     'https://anisadwiramahdanii.github.io',
 ]
 
@@ -122,4 +124,5 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Dokumentasi REST API resmi untuk Portal Pelaporan Laporan Warga',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'DISABLE_ERRORS_AND_WARNINGS': True,
 }

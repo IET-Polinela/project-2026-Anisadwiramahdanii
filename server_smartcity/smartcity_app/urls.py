@@ -24,6 +24,7 @@ urlpatterns = [
     ),
     path('api/docs/scalar/', scalar_viewer, name='scalar-ui'),
     path('accounts/', include('usermanagement_24782037.urls')),
+    path('', include('usermanagement_24782037.urls')),
     path('dashboard/', include('dashboard_24782037.urls')),
     path('about/', include('about.urls')),
     path('contact/', include('contacts.urls')),

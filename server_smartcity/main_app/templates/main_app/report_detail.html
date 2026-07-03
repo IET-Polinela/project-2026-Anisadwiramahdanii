@@ -53,21 +53,30 @@
                     Alur valid: Reported -> Verified -> In Progress -> Resolved.
                 </p>
 
-                {% if user.is_authenticated and user.is_admin and object.next_status %}
-                    <form method="post" action="{% url 'update_status' object.pk %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="status" value="{{ object.next_status.value }}">
-                        <button type="submit" class="btn btn-primary w-100" data-loading-button data-loading-text="Memproses...">
-                            Ubah ke {{ object.next_status.label }}
-                        </button>
-                    </form>
+                {% if user.is_authenticated and user.is_admin %}
+                    {% if object.allowed_statuses %}
+                        <form method="post" action="{% url 'update_status' object.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="statusSelect" class="form-label">Pilih status baru</label>
+                                <select id="statusSelect" name="status" class="form-select" required>
+                                    {% for status in object.allowed_statuses %}
+                                        <option value="{{ status.value }}">{{ status.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" data-loading-button data-loading-text="Memproses...">
+                                Ubah status
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-success mb-0">
+                            Laporan sudah mencapai status akhir dan tidak bisa diubah lagi.
+                        </div>
+                    {% endif %}
                 {% elif not user.is_authenticated or not user.is_admin %}
                     <div class="alert alert-light border mb-0">
                         Hanya admin yang dapat mengubah workflow laporan.
-                    </div>
-                {% else %}
-                    <div class="alert alert-success mb-0">
-                        Laporan sudah mencapai status akhir dan tidak bisa diubah lagi.
                     </div>
                 {% endif %}
             </div>

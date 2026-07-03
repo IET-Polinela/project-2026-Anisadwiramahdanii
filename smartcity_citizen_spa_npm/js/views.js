@@ -41,9 +41,9 @@ function dashboardView() {
                     <h1 class="h3 mb-1">Dashboard Citizen</h1>
                     <p class="text-secondary mb-0">Pantau laporan kota dan status pengaduan warga.</p>
                 </div>
-                <button class="btn btn-primary" id="openReportModal" type="button">
-                    <i class="bi bi-plus-lg me-1"></i>Tambah Laporan Baru
-                </button>
+               <button class="btn btn-primary" id="btnBukaModal" type="button">
+                   <i class="bi bi-plus-lg me-1"></i>Tambah Laporan Baru
+               </button>
             </div>
 
             <div class="row g-3">
@@ -52,14 +52,14 @@ function dashboardView() {
                         <div class="panel-header">
                             <h2 class="h6 mb-0">Ringkasan</h2>
                         </div>
-                        <div class="panel-body d-grid gap-3">
+                        <div class="panel-body d-grid gap-3" id="summaryStats">
                             <div class="metric">
                                 <div class="text-secondary small">Total Laporan</div>
                                 <div class="metric-value" id="totalReports">0</div>
                             </div>
                             <div class="metric">
                                 <div class="text-secondary small">Draft</div>
-                                <div class="metric-value" id="draftReports">0</div>
+                                <div class="metric-value badge bg-secondary" id="draftReports">0</div>
                             </div>
                             <div class="metric">
                                 <div class="text-secondary small">Diproses</div>
@@ -85,8 +85,11 @@ function dashboardView() {
                                     <button class="btn btn-primary" id="myReportsTab" type="button" data-dashboard-tab="my_reports">
                                         <i class="bi bi-person-lines-fill me-1"></i>Laporan Saya
                                     </button>
-                                    <button class="btn btn-outline-primary" id="feedTab" type="button" data-dashboard-tab="feed">
-                                        <i class="bi bi-broadcast me-1"></i>Feed Kota
+                                   <button class="btn btn-outline-primary"
+                                           id="tabFeedKota"
+                                           type="button"
+                                           data-dashboard-tab="feed">
+                                       <i class="bi bi-broadcast me-1"></i>Feed Kota
                                     </button>
                                 </div>
                                 <button class="btn btn-outline-primary btn-sm" id="reloadReports" type="button" title="Muat ulang">
@@ -95,11 +98,11 @@ function dashboardView() {
                             </div>
                         </div>
                         <div class="panel-body">
-                            <div id="reportsList" class="d-grid gap-3">
+                            <div id="listContainer" class="row g-3">
                                 <div class="text-secondary text-center py-4">Memuat laporan...</div>
                             </div>
                             <nav class="mt-3" aria-label="Navigasi halaman laporan">
-                                <div id="reportsPagination" class="pagination pagination-sm mb-0 justify-content-center"></div>
+                                <div id="paginationContainer" class="pagination pagination-sm mb-0 justify-content-center"></div>
                             </nav>
                         </div>
                     </div>
@@ -110,7 +113,7 @@ function dashboardView() {
 }
 
 function renderList(reports, tab) {
-    const target = document.getElementById('reportsList');
+    const target = document.getElementById('listContainer');
 
     if (!target) {
         return;
@@ -127,7 +130,8 @@ function renderList(reports, tab) {
         const updatedAt = report.updated_at ? new Date(report.updated_at).toLocaleString('id-ID') : '-';
 
         return `
-            <article class="report-card p-3">
+        <div class="col">
+            <article class="report-card">
                 <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-2">
                     <div>
                         <h3 class="h6 mb-1">${escapeHTML(report.title)}</h3>
@@ -154,12 +158,13 @@ function renderList(reports, tab) {
                     </div>
                 ` : ''}
             </article>
+        </div>
         `;
     }).join('');
 }
 
 function renderPagination(payload, currentPage) {
-    const target = document.getElementById('reportsPagination');
+    const target = document.getElementById('paginationContainer');
 
     if (!target) {
         return;
